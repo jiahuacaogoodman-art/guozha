@@ -1,0 +1,41 @@
+{
+	"editor.formatOnSave": true,
+	"tailwindCSS.codeActions": false,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "explicit",
+		"source.removeUnusedImports": "explicit"
+	},
+
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+
+	"[css]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+
+	"[yaml]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+
+	"[markdown]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"cSpell.words": ["fflate", "jedec", "Mkdirs", "Nutstore", "webdav"],
+	"i18n-ally.localesPaths": [
+		"src/i18n",
+		"src/i18n/locales",
+		"packages/webdav-explorer/src/i18n",
+		"packages/webdav-explorer/src/i18n/locales"
+	]
+}
