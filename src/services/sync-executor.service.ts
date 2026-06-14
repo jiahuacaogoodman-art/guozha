@@ -1,4 +1,8 @@
+import { Notice } from 'obsidian'
+import i18n from '~/i18n'
 import { NutstoreSync, SyncStartMode } from '~/sync'
+import { isNutstoreSsoUnavailableError } from '~/utils/decrypt-ticket-response'
+import logger from '~/utils/logger'
 import waitUntil from '~/utils/wait-until'
 import type NutstorePlugin from '..'
 
@@ -35,8 +39,30 @@ export default class SyncExecutorService {
 			return await sync.start({
 				mode: options.mode,
 			})
+		} catch (error) {
+			logger.error(error)
+			if (isNutstoreSsoUnavailableError(error)) {
+				new Notice(i18n.t('settings.ssoStatus.unavailableNotice'), 8000)
+				if (options.mode === SyncStartMode.MANUAL_SYNC) {
+					this.openSettings()
+				}
+				return false
+			}
+			throw error
 		} finally {
 			this.inFlight = false
+		}
+	}
+
+	private openSettings() {
+		try {
+			const setting = this.plugin.app.setting
+			if (setting) {
+				setting.open()
+				setting.openTabById(this.plugin.manifest.id)
+			}
+		} catch (error) {
+			logger.error('Failed to open settings:', error)
 		}
 	}
 }

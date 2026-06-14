@@ -49,6 +49,13 @@ export default {
 			notLoggedIn: 'Not logged in',
 			logout: 'Logout',
 			logoutSuccess: 'Logged out successfully',
+			unavailableTitle: 'Single sign-on unavailable',
+			unavailableDesc:
+				'This build does not include the Nutstore single sign-on component. Switch to manual input and use your Nutstore WebDAV account and app password to continue syncing.',
+			unavailableNotice:
+				'This build does not include the Nutstore single sign-on component. Switch to manual input in settings.',
+			switchToManual: 'Switch to manual input',
+			switchedToManual: 'Switched to manual input',
 		},
 		useGitStyle: {
 			name: 'Use git-style conflict markers',
