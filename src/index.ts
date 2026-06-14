@@ -84,7 +84,6 @@ export default class NutstorePlugin extends Plugin {
 	}
 
 	async onunload() {
-		this.app.workspace.detachLeavesOfType(CHATBOX_VIEW_TYPE)
 		setPluginInstance(null)
 		emitCancelSync()
 		this.scheduledSyncService.unload()

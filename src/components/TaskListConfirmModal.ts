@@ -60,8 +60,9 @@ export default class TaskListConfirmModal extends Modal {
 			row.createEl('td', { text: task.remotePath })
 		})
 
-		const settingDiv = contentEl.createDiv()
-		settingDiv.style.marginTop = '1rem'
+		const settingDiv = contentEl.createDiv({
+			cls: 'guozha-modal-actions',
+		})
 		new Setting(settingDiv)
 			.addButton((button) => {
 				button

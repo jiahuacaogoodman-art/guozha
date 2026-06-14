@@ -47,8 +47,9 @@ export default class FailedTasksModal extends Modal {
 			row.createEl('td', { text: task.errorMessage })
 		})
 
-		const settingDiv = contentEl.createDiv()
-		settingDiv.style.marginTop = '1rem'
+		const settingDiv = contentEl.createDiv({
+			cls: 'guozha-modal-actions',
+		})
 		new Setting(settingDiv).addButton((button) => {
 			button
 				.setButtonText(i18n.t('failedTasks.close'))

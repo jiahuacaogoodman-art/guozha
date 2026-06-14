@@ -22,7 +22,7 @@ import RemoveLocalTask from '../sync/tasks/remove-local.task'
 import RemoveRemoteTask from '../sync/tasks/remove-remote.task'
 
 export default class SyncProgressModal extends Modal {
-	private progressBar: HTMLDivElement
+	private progressBar: HTMLProgressElement
 	private progressText: HTMLDivElement
 	private progressStats: HTMLDivElement
 	private currentFile: HTMLDivElement
@@ -33,7 +33,7 @@ export default class SyncProgressModal extends Modal {
 	private stopButtonComponent: ButtonComponent
 	private hideButtonComponent: ButtonComponent
 
-	private cacheProgressBar: HTMLDivElement
+	private cacheProgressBar: HTMLProgressElement
 	private cacheProgressText: HTMLDivElement
 	private cacheProgressStats: HTMLDivElement
 	private cacheCurrentOperation: HTMLDivElement
@@ -70,7 +70,7 @@ export default class SyncProgressModal extends Modal {
 		const percent =
 			Math.round((progress.completed.length / progress.total) * 100) || 0
 
-		this.progressBar.style.width = `${percent}%`
+		this.progressBar.value = percent
 		this.progressText.setText(
 			i18n.t('sync.percentComplete', {
 				percent,
@@ -195,15 +195,19 @@ export default class SyncProgressModal extends Modal {
 		})
 
 		const progressBarContainer = progressSection.createDiv({
-			cls: 'relative h-5 bg-[var(--background-secondary)] rounded overflow-hidden',
+			cls: 'guozha-progress-wrap',
 		})
 
-		const progressBar = progressBarContainer.createDiv({
-			cls: 'absolute h-full bg-[var(--interactive-accent)] w-0 transition-width',
+		const progressBar = progressBarContainer.createEl('progress', {
+			cls: 'guozha-progress-bar',
+			attr: {
+				max: '100',
+				value: '0',
+			},
 		})
 
 		const progressText = progressBarContainer.createDiv({
-			cls: 'absolute w-full text-center text-3 leading-5 text-[var(--text-on-accent)] mix-blend-difference',
+			cls: 'guozha-progress-text',
 		})
 
 		// Cache progress section
@@ -221,15 +225,19 @@ export default class SyncProgressModal extends Modal {
 		this.cacheProgressStats.hide()
 
 		const cacheProgressBarContainer = cacheProgressSection.createDiv({
-			cls: 'relative h-5 bg-[var(--background-secondary)] rounded overflow-hidden',
+			cls: 'guozha-progress-wrap',
 		})
 		cacheProgressBarContainer.hide()
 
-		this.cacheProgressBar = cacheProgressBarContainer.createDiv({
-			cls: 'absolute h-full bg-[var(--interactive-accent)] w-0 transition-width',
+		this.cacheProgressBar = cacheProgressBarContainer.createEl('progress', {
+			cls: 'guozha-progress-bar',
+			attr: {
+				max: '100',
+				value: '0',
+			},
 		})
 		this.cacheProgressText = cacheProgressBarContainer.createDiv({
-			cls: 'absolute w-full text-center text-3 leading-5 text-[var(--text-on-accent)] mix-blend-difference',
+			cls: 'guozha-progress-text',
 		})
 
 		const filesSection = container.createDiv({
@@ -300,7 +308,7 @@ export default class SyncProgressModal extends Modal {
 
 		const percent = Math.round((completed / total) * 100) || 0
 
-		this.cacheProgressBar.style.width = `${percent}%`
+		this.cacheProgressBar.value = percent
 		this.cacheProgressText.setText(
 			i18n.t('sync.percentComplete', {
 				percent,
