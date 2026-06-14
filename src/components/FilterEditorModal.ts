@@ -37,7 +37,7 @@ export default class FilterEditorModal extends Modal {
 				? 'settings.filters.include.desc'
 				: 'settings.filters.exclude.desc'
 
-		contentEl.createEl('h2', { text: i18n.t(titleKey) })
+		new Setting(contentEl).setName(i18n.t(titleKey)).setHeading()
 		contentEl.createEl('p', {
 			text: i18n.t(descKey),
 			cls: 'setting-item-description',

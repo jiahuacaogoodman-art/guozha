@@ -78,7 +78,7 @@ export default {
 		},
 		sections: {
 			account: '账号设置',
-			common: '通用设置',
+			common: '同步选项',
 			filters: '过滤规则',
 			ai: 'AI 设置',
 		},

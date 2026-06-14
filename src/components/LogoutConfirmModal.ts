@@ -12,7 +12,9 @@ export default class LogoutConfirmModal extends Modal {
 	onOpen() {
 		const { contentEl } = this
 
-		contentEl.createEl('h2', { text: i18n.t('settings.logout.confirmTitle') })
+		new Setting(contentEl)
+			.setName(i18n.t('settings.logout.confirmTitle'))
+			.setHeading()
 		contentEl.createEl('p', { text: i18n.t('settings.logout.confirmMessage') })
 
 		new Setting(contentEl)

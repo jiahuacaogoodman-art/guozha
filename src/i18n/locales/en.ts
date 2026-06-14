@@ -102,7 +102,7 @@ export default {
 		},
 		sections: {
 			account: 'Account',
-			common: 'General',
+			common: 'Sync options',
 			filters: 'Filter rules',
 			ai: 'AI',
 		},

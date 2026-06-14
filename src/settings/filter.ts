@@ -115,9 +115,9 @@ class ConfigDirSyncBookmarksModal extends Modal {
 
 	onOpen() {
 		const { contentEl } = this
-		contentEl.createEl('h2', {
-			text: i18n.t('settings.configDirSync.bookmarksTitle'),
-		})
+		new Setting(contentEl)
+			.setName(i18n.t('settings.configDirSync.bookmarksTitle'))
+			.setHeading()
 		contentEl.createEl('p', {
 			text: i18n.t('settings.configDirSync.bookmarksDesc', {
 				configDir: this.configDir,
@@ -168,9 +168,9 @@ class ConfigDirSyncWarningModal extends Modal {
 		const t = (key: (typeof warningKeys)[number]) =>
 			i18n.t(key, { configDir: this.configDir })
 
-		contentEl.createEl('h2', {
-			text: i18n.t('settings.configDirSync.warnTitle'),
-		})
+		new Setting(contentEl)
+			.setName(i18n.t('settings.configDirSync.warnTitle'))
+			.setHeading()
 		for (const key of warningKeys) {
 			contentEl.createEl('p', { text: t(key) })
 		}

@@ -30,9 +30,9 @@ export default class ProvidersManagerModal extends Modal {
 	private render() {
 		const { contentEl } = this
 		contentEl.empty()
-		contentEl.createEl('h2', {
-			text: i18n.t('settings.ai.modals.providers.title'),
-		})
+		new Setting(contentEl)
+			.setName(i18n.t('settings.ai.modals.providers.title'))
+			.setHeading()
 
 		const presets = listPresetProviders()
 
@@ -101,9 +101,7 @@ export default class ProvidersManagerModal extends Modal {
 		for (const provider of providers) {
 			new Setting(contentEl)
 				.setName(provider.name || i18n.t('settings.ai.unnamedProvider'))
-				.setDesc(
-					provider.api || i18n.t('settings.ai.providers.openaiDefault'),
-				)
+				.setDesc(provider.api || i18n.t('settings.ai.providers.openaiDefault'))
 				.addButton((button) =>
 					button
 						.setButtonText(i18n.t('settings.ai.modals.provider.edit'))
@@ -134,20 +132,18 @@ export default class ProvidersManagerModal extends Modal {
 						button.buttonEl.removeClass('mod-warning')
 					}
 
-					button
-						.setIcon('trash')
-						.onClick(async () => {
-							if (!confirmDelete) {
-								confirmDelete = true
-								button.buttonEl.empty()
-								button.buttonEl.createSpan({
-									text: i18n.t('settings.ai.modals.confirmDeleteLabel'),
-								})
-								button.buttonEl.addClass('mod-warning')
-								return
-							}
-							await this.deleteProvider(provider)
-						})
+					button.setIcon('trash').onClick(async () => {
+						if (!confirmDelete) {
+							confirmDelete = true
+							button.buttonEl.empty()
+							button.buttonEl.createSpan({
+								text: i18n.t('settings.ai.modals.confirmDeleteLabel'),
+							})
+							button.buttonEl.addClass('mod-warning')
+							return
+						}
+						await this.deleteProvider(provider)
+					})
 					button.buttonEl.addEventListener('blur', resetButton)
 				})
 		}

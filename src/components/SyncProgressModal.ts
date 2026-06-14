@@ -173,10 +173,7 @@ export default class SyncProgressModal extends Modal {
 			cls: 'border-b border-[var(--background-modifier-border)]',
 		})
 
-		const title = header.createEl('h2', {
-			cls: 'm-0',
-		})
-		title.setText(i18n.t('sync.progressTitle'))
+		new Setting(header).setName(i18n.t('sync.progressTitle')).setHeading()
 
 		const statusSection = container.createDiv({
 			cls: 'flex flex-col gap-1',

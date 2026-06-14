@@ -14,7 +14,9 @@ export default class SyncConfirmModal extends Modal {
 		const { contentEl } = this
 		const settings = await useSettings()
 
-		contentEl.createEl('h2', { text: i18n.t('sync.confirmModal.title') })
+		new Setting(contentEl)
+			.setName(i18n.t('sync.confirmModal.title'))
+			.setHeading()
 		const infoDiv = contentEl.createDiv({ cls: 'sync-info' })
 		infoDiv.createEl('p', {
 			text: i18n.t('sync.confirmModal.remoteDir', { dir: settings.remoteDir }),

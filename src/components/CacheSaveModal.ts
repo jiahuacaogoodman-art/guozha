@@ -18,9 +18,9 @@ export default class CacheSaveModal extends Modal {
 	onOpen() {
 		const { contentEl } = this
 
-		contentEl.createEl('h2', {
-			text: i18n.t('settings.cache.saveModal.title'),
-		})
+		new Setting(contentEl)
+			.setName(i18n.t('settings.cache.saveModal.title'))
+			.setHeading()
 		contentEl.createEl('p', {
 			text: i18n.t('settings.cache.saveModal.description'),
 			cls: 'setting-item-description',

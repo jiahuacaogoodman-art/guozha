@@ -27,11 +27,13 @@ export default class ModelEditorModal extends Modal {
 	onOpen() {
 		const { contentEl } = this
 		contentEl.empty()
-		contentEl.createEl('h2', {
-			text: this.isNew
-				? i18n.t('settings.ai.modals.model.createTitle')
-				: i18n.t('settings.ai.modals.model.editTitle'),
-		})
+		new Setting(contentEl)
+			.setName(
+				this.isNew
+					? i18n.t('settings.ai.modals.model.createTitle')
+					: i18n.t('settings.ai.modals.model.editTitle'),
+			)
+			.setHeading()
 
 		new Setting(contentEl)
 			.setName(i18n.t('settings.ai.model.id'))

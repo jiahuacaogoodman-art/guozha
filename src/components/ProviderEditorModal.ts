@@ -27,11 +27,13 @@ export default class ProviderEditorModal extends Modal {
 	private render() {
 		const { contentEl } = this
 		contentEl.empty()
-		contentEl.createEl('h2', {
-			text: this.isNew
-				? i18n.t('settings.ai.modals.provider.createTitle')
-				: i18n.t('settings.ai.modals.provider.editTitle'),
-		})
+		new Setting(contentEl)
+			.setName(
+				this.isNew
+					? i18n.t('settings.ai.modals.provider.createTitle')
+					: i18n.t('settings.ai.modals.provider.editTitle'),
+			)
+			.setHeading()
 
 		new Setting(contentEl)
 			.setName(i18n.t('settings.ai.provider.name'))
@@ -137,20 +139,18 @@ export default class ProviderEditorModal extends Modal {
 						button.buttonEl.removeClass('mod-warning')
 					}
 
-					button
-						.setIcon('trash')
-						.onClick(() => {
-							if (!confirmDelete) {
-								confirmDelete = true
-								button.buttonEl.empty()
-								button.buttonEl.createSpan({
-									text: i18n.t('settings.ai.modals.confirmDeleteLabel'),
-								})
-								button.buttonEl.addClass('mod-warning')
-								return
-							}
-							this.deleteModel(model)
-						})
+					button.setIcon('trash').onClick(() => {
+						if (!confirmDelete) {
+							confirmDelete = true
+							button.buttonEl.empty()
+							button.buttonEl.createSpan({
+								text: i18n.t('settings.ai.modals.confirmDeleteLabel'),
+							})
+							button.buttonEl.addClass('mod-warning')
+							return
+						}
+						this.deleteModel(model)
+					})
 					button.buttonEl.addEventListener('blur', resetButton)
 				})
 		}
