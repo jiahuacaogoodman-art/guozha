@@ -129,7 +129,7 @@ export default class NutstorePlugin extends Plugin {
 			useGitStyle: false,
 			conflictStrategy: ConflictStrategy.DiffMatchPatch,
 			oauthResponseText: '',
-			loginMode: 'sso',
+			loginMode: 'manual',
 			confirmBeforeSync: true,
 			confirmBeforeDeleteInAutoSync: true,
 			syncMode: SyncMode.LOOSE,

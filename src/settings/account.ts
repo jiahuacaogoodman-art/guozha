@@ -2,7 +2,10 @@ import { createOAuthUrl } from '@nutstore/sso-js'
 import { Notice, Setting } from 'obsidian'
 import LogoutConfirmModal from '~/components/LogoutConfirmModal'
 import i18n from '~/i18n'
-import { OAuthResponse } from '~/utils/decrypt-ticket-response'
+import {
+	isNutstoreSsoUnavailableError,
+	OAuthResponse,
+} from '~/utils/decrypt-ticket-response'
 import { is503Error } from '~/utils/is-503-error'
 import logger from '~/utils/logger'
 import BaseSettings from './settings.base'
@@ -12,6 +15,7 @@ export default class AccountSettings extends BaseSettings {
 
 	async display() {
 		this.containerEl.empty()
+		this.clearOAuthUrlTimer()
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.sections.account'))
 			.setHeading()
@@ -38,6 +42,10 @@ export default class AccountSettings extends BaseSettings {
 	}
 
 	async hide() {
+		this.clearOAuthUrlTimer()
+	}
+
+	private clearOAuthUrlTimer() {
 		if (this.updateOAuthUrlTimer !== null) {
 			window.clearInterval(this.updateOAuthUrlTimer)
 			this.updateOAuthUrlTimer = null
@@ -91,6 +99,10 @@ export default class AccountSettings extends BaseSettings {
 				oauth = await this.plugin.getDecryptedOAuthInfo()
 			} catch (e) {
 				logger.error(e)
+				if (isNutstoreSsoUnavailableError(e)) {
+					this.displaySsoUnavailable()
+					return
+				}
 				isLoggedIn = false
 			}
 		}
@@ -115,30 +127,68 @@ export default class AccountSettings extends BaseSettings {
 			el.infoEl.classList.add('max-w-full')
 			this.displayCheckConnection()
 		} else {
+			let oauthUrl = ''
+			try {
+				oauthUrl = await createOAuthUrl({
+					app: 'obsidian',
+				})
+			} catch (error) {
+				logger.error(error)
+				if (isNutstoreSsoUnavailableError(error)) {
+					this.displaySsoUnavailable()
+					return
+				}
+				new Notice(i18n.t('settings.login.failure'))
+			}
 			new Setting(this.containerEl)
 				.setName(i18n.t('settings.ssoStatus.notLoggedIn'))
-				.addButton(async (button) => {
+				.addButton((button) => {
 					button.setButtonText(i18n.t('settings.login.name'))
+					button.setDisabled(oauthUrl.length === 0)
 					const anchor = document.createElement('a')
 					anchor.target = '_blank'
 					button.buttonEl.parentElement?.appendChild(anchor)
 					anchor.appendChild(button.buttonEl)
-					anchor.href = await createOAuthUrl({
-						app: 'obsidian',
-					})
+					if (oauthUrl.length > 0) {
+						anchor.href = oauthUrl
+					}
 					this.updateOAuthUrlTimer = window.setInterval(async () => {
 						const stillInDoc = document.contains(anchor)
-						if (stillInDoc) {
+						if (!stillInDoc) {
+							this.clearOAuthUrlTimer()
+							return
+						}
+						try {
 							anchor.href = await createOAuthUrl({
 								app: 'obsidian',
 							})
-						} else {
-							window.clearInterval(this.updateOAuthUrlTimer!)
-							this.updateOAuthUrlTimer = null
+						} catch (error) {
+							logger.error(error)
+							this.clearOAuthUrlTimer()
+							if (isNutstoreSsoUnavailableError(error)) {
+								this.display()
+							}
 						}
 					}, 60 * 1000)
 				})
 		}
+	}
+
+	private displaySsoUnavailable() {
+		new Setting(this.containerEl)
+			.setName(i18n.t('settings.ssoStatus.unavailableTitle'))
+			.setDesc(i18n.t('settings.ssoStatus.unavailableDesc'))
+			.addButton((button) => {
+				button
+					.setButtonText(i18n.t('settings.ssoStatus.switchToManual'))
+					.setCta()
+					.onClick(async () => {
+						this.plugin.settings.loginMode = 'manual'
+						await this.plugin.saveSettings()
+						new Notice(i18n.t('settings.ssoStatus.switchedToManual'))
+						this.display()
+					})
+			})
 	}
 
 	private displayCheckConnection() {
