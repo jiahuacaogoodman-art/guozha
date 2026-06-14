@@ -40,55 +40,50 @@ export default class AIPermissionModal extends Modal {
 		if (!('path' in this.request.fs)) {
 			return
 		}
-		const rowEl = this.contentEl.createEl('div')
-		rowEl.style.marginBottom = '0.5rem'
+		const rowEl = this.contentEl.createEl('div', {
+			cls: 'guozha-ai-permission-row',
+		})
 
 		rowEl.createEl('strong', {
 			text: getOperationLabel(this.request.fs.kind),
 		})
-		rowEl.createEl('code', { text: this.request.fs.path })
-		const pathEl = rowEl.lastChild as HTMLElement | null
-		if (pathEl) {
-			pathEl.style.display = 'block'
-			pathEl.style.marginTop = '0.25rem'
-			pathEl.style.wordBreak = 'break-all'
-		}
+		rowEl.createEl('code', {
+			cls: 'guozha-ai-permission-path',
+			text: this.request.fs.path,
+		})
 	}
 
 	private renderDualPathRequest() {
 		if (!('src' in this.request.fs) || !('dest' in this.request.fs)) {
 			return
 		}
-		const rowEl = this.contentEl.createEl('div')
-		rowEl.style.marginBottom = '0.5rem'
+		const rowEl = this.contentEl.createEl('div', {
+			cls: 'guozha-ai-permission-row',
+		})
 
 		rowEl.createEl('strong', {
 			text: getOperationLabel(this.request.fs.kind),
 		})
 
-		const sourceLabel = rowEl.createEl('div', {
+		rowEl.createEl('div', {
+			cls: 'guozha-ai-permission-path-label guozha-ai-permission-path-label-first',
 			text: i18n.t('aiPermission.source'),
 		})
-		sourceLabel.style.marginTop = '0.25rem'
-		sourceLabel.style.fontWeight = '600'
 
-		const sourcePathEl = rowEl.createEl('code', {
+		rowEl.createEl('code', {
+			cls: 'guozha-ai-permission-path',
 			text: this.request.fs.src,
 		})
-		sourcePathEl.style.display = 'block'
-		sourcePathEl.style.wordBreak = 'break-all'
 
-		const destLabel = rowEl.createEl('div', {
+		rowEl.createEl('div', {
+			cls: 'guozha-ai-permission-path-label guozha-ai-permission-path-label-next',
 			text: i18n.t('aiPermission.destination'),
 		})
-		destLabel.style.marginTop = '0.5rem'
-		destLabel.style.fontWeight = '600'
 
-		const destPathEl = rowEl.createEl('code', {
+		rowEl.createEl('code', {
+			cls: 'guozha-ai-permission-path',
 			text: this.request.fs.dest,
 		})
-		destPathEl.style.display = 'block'
-		destPathEl.style.wordBreak = 'break-all'
 	}
 
 	onOpen() {

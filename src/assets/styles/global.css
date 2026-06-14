@@ -104,6 +104,82 @@ input.success {
 	background-color: var(--background-modifier-hover);
 }
 
+.delete-confirm-instruction {
+	white-space: pre-wrap;
+}
+
+.guozha-task-list-center {
+	text-align: center;
+}
+
+.guozha-modal-actions {
+	margin-top: 1rem;
+}
+
+.guozha-ai-permission-row {
+	margin-bottom: 0.5rem;
+}
+
+.guozha-ai-permission-path {
+	display: block;
+	word-break: break-all;
+}
+
+.guozha-ai-permission-row > .guozha-ai-permission-path {
+	margin-top: 0.25rem;
+}
+
+.guozha-ai-permission-path-label {
+	font-weight: 600;
+}
+
+.guozha-ai-permission-path-label-first {
+	margin-top: 0.25rem;
+}
+
+.guozha-ai-permission-path-label-next {
+	margin-top: 0.5rem;
+}
+
+.guozha-progress-wrap {
+	position: relative;
+	height: 1.25rem;
+	overflow: hidden;
+	border-radius: var(--radius-s);
+	background-color: var(--background-secondary);
+}
+
+.guozha-progress-bar {
+	width: 100%;
+	height: 100%;
+	appearance: none;
+	border: 0;
+	background: transparent;
+}
+
+.guozha-progress-bar::-webkit-progress-bar {
+	background: transparent;
+}
+
+.guozha-progress-bar::-webkit-progress-value {
+	background-color: var(--interactive-accent);
+}
+
+.guozha-progress-bar::-moz-progress-bar {
+	background-color: var(--interactive-accent);
+}
+
+.guozha-progress-text {
+	position: absolute;
+	inset: 0;
+	text-align: center;
+	font-size: 0.75rem;
+	line-height: 1.25rem;
+	color: var(--text-on-accent);
+	mix-blend-mode: difference;
+	pointer-events: none;
+}
+
 .setting-required .setting-item-name::after {
 	content: ' *';
 	color: var(--text-error);

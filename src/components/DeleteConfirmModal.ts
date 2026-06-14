@@ -23,7 +23,6 @@ export default class DeleteConfirmModal extends Modal {
 		const instruction = contentEl.createEl('p', {
 			cls: 'delete-confirm-instruction',
 		})
-		instruction.style.whiteSpace = 'pre-wrap'
 		instruction.setText(i18n.t('deleteConfirm.instruction'))
 
 		const tableContainer = contentEl.createDiv({
@@ -34,16 +33,17 @@ export default class DeleteConfirmModal extends Modal {
 		const thead = table.createEl('thead')
 		const headerRow = thead.createEl('tr')
 		const selectHeader = headerRow.createEl('th', {
+			cls: 'guozha-task-list-center',
 			text: i18n.t('deleteConfirm.select'),
 		})
-		selectHeader.style.textAlign = 'center'
 		headerRow.createEl('th', { text: i18n.t('deleteConfirm.filePath') })
 
 		const tbody = table.createEl('tbody')
 		this.tasks.forEach((task, index) => {
 			const row = tbody.createEl('tr')
-			const checkboxCell = row.createEl('td')
-			checkboxCell.style.textAlign = 'center'
+			const checkboxCell = row.createEl('td', {
+				cls: 'guozha-task-list-center',
+			})
 			const checkbox = checkboxCell.createEl('input')
 			checkbox.type = 'checkbox'
 			checkbox.checked = this.selectedTasks[index]
@@ -62,8 +62,9 @@ export default class DeleteConfirmModal extends Modal {
 			row.createEl('td', { text: task.localPath })
 		})
 
-		const settingDiv = contentEl.createDiv()
-		settingDiv.style.marginTop = '1rem'
+		const settingDiv = contentEl.createDiv({
+			cls: 'guozha-modal-actions',
+		})
 		new Setting(settingDiv)
 			.addButton((button) => {
 				button
