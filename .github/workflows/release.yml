@@ -51,10 +51,21 @@ jobs:
           tag="${GITHUB_REF#refs/tags/}"
           assets=(main.js manifest.json styles.css)
 
+          release_notes=$(
+            cat <<EOF
+          Guozha AI Pro ${tag}
+
+          - Refreshes the community review release with verified build assets.
+          - Requires Obsidian 1.4.0 or newer to match the plugin API usage.
+          EOF
+          )
+
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --title="$tag" "${assets[@]}"
+            gh release create "$tag" --title="$tag" --notes "$release_notes" "${assets[@]}"
             exit 0
           fi
+
+          gh release edit "$tag" --notes "$release_notes"
 
           for asset in "${assets[@]}"; do
             gh release delete-asset "$tag" "$asset" --yes >/dev/null 2>&1 || true
