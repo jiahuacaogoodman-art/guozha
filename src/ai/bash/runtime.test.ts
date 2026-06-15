@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { TFile, TFolder, type App, type Vault } from 'obsidian'
 import type { PermissionRequest } from '~/ai/permission-guard'
 import { createVaultBash, execVaultBash, VAULT_MOUNT_POINT } from './runtime'
@@ -353,7 +353,7 @@ describe('vault bash runtime', () => {
 			['docs'],
 		)
 		const indexedGetAbstractFileByPath = vault.getAbstractFileByPath.bind(vault)
-		vi.spyOn(vault, 'getAbstractFileByPath').mockImplementation((path) => {
+		vi.spyOn(vault, 'getAbstractFileByPath').mockImplementation((path: string) => {
 			if (path === 'docs/stale.md') {
 				return null
 			}
@@ -377,7 +377,7 @@ describe('vault bash runtime', () => {
 			['docs'],
 		)
 		const indexedGetAbstractFileByPath = vault.getAbstractFileByPath.bind(vault)
-		vi.spyOn(vault, 'getAbstractFileByPath').mockImplementation((path) => {
+		vi.spyOn(vault, 'getAbstractFileByPath').mockImplementation((path: string) => {
 			if (path === 'docs/stale.md') {
 				return null
 			}
