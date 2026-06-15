@@ -35,11 +35,12 @@ export const getLatestDeltaCursor = apiLimiter.wrap(
 			},
 			processEntities: false,
 		})
-		const result: {
+		const parsed = parseXml.parse(response.text) as unknown
+		const result = parsed as {
 			response: {
 				cursor: string
 			}
-		} = parseXml.parse(response.text)
+		}
 		return result
 	},
 )

@@ -21,7 +21,7 @@ export function mergeDigIn(
 		label: {},
 		useGitStyle: false,
 	}
-	options = Object.assign(defaults, options)
+	options = { ...defaults, ...options }
 
 	const aSection = options.useGitStyle
 		? '<<<<<<<'
@@ -43,16 +43,16 @@ export function mergeDigIn(
 			for (let j = 0; j < c.length; j++) {
 				let inner = c[j]
 				if (inner.common) {
-					result = result.concat(inner.common)
+					result = result.concat(inner.common as string[])
 				} else {
 					conflict = true
-					result = result.concat(
-						[aSection],
-						inner.buffer1,
-						[xSection],
-						inner.buffer2,
-						[bSection],
-					)
+				result = result.concat(
+					[aSection],
+					inner.buffer1,
+					[xSection],
+					inner.buffer2,
+					[bSection],
+				)
 				}
 			}
 		}

@@ -11,7 +11,7 @@ export default class DeleteConfirmModal extends Modal {
 		private tasks: RemoveLocalTask[],
 	) {
 		super(app)
-		this.selectedTasks = new Array(tasks.length).fill(true)
+		this.selectedTasks = Array.from({ length: tasks.length }, () => true)
 	}
 
 	onOpen() {

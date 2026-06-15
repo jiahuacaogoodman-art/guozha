@@ -1,6 +1,6 @@
 import deepStringify from './deep-stringify'
 
-export default function (logs: any) {
+export default function (logs: unknown) {
 	if (typeof logs === 'string') {
 		return logs
 	}
@@ -9,6 +9,8 @@ export default function (logs: any) {
 	} catch {
 		try {
 			return deepStringify(logs)
-		} catch {}
+		} catch {
+			return String(logs)
+		}
 	}
 }

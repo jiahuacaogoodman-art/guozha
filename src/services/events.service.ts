@@ -39,7 +39,7 @@ export default class EventsService {
 				})
 			}),
 
-			onEndSync().subscribe(async ({ failedCount, showNotice }) => {
+			onEndSync().subscribe(({ failedCount, showNotice }) => {
 				plugin.toggleSyncUI(false)
 				const now = Date.now()
 				plugin.statusService.setLastSyncTime(now, failedCount)

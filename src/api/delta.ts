@@ -56,7 +56,8 @@ export const getDelta = apiLimiter.wrap(
 			},
 			processEntities: false,
 		})
-		const result: { response: DeltaResponse } = parseXml.parse(response.text)
+		const parsed = parseXml.parse(response.text) as unknown
+		const result = parsed as { response: DeltaResponse }
 
 		if (!isNil(result?.response?.cursor)) {
 			result.response.cursor = result.response.cursor.toString()

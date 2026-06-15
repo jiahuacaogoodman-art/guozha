@@ -1,12 +1,13 @@
 import { Notice, Setting } from 'obsidian'
 import { isNotNil } from 'ramda'
 import i18n from '~/i18n'
+import { runAsync } from '~/utils/async-helpers'
 import logger from '~/utils/logger'
 import logsStringify from '~/utils/logs-stringify'
 import BaseSettings from './settings.base'
 
 export default class LogSettings extends BaseSettings {
-	async display() {
+	display() {
 		this.containerEl.empty()
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.log.title'))
@@ -15,11 +16,11 @@ export default class LogSettings extends BaseSettings {
 			.setName(i18n.t('settings.log.name'))
 			.setDesc(i18n.t('settings.log.desc'))
 			.addButton((button) => {
-				button
-					.setButtonText(i18n.t('settings.log.saveToNote'))
-					.onClick(async () => {
-						await this.saveLogsToNote()
-					})
+					button
+						.setButtonText(i18n.t('settings.log.saveToNote'))
+						.onClick(() => {
+							runAsync(() => this.saveLogsToNote())
+						})
 			})
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.log.clearName'))

@@ -14,7 +14,7 @@ interface WebDAVResponse {
 			propstat: {
 				prop: {
 					displayname: string
-					resourcetype: { collection?: any }
+					resourcetype: { collection?: unknown }
 					getlastmodified?: string
 					getcontentlength?: string
 					getcontenttype?: string
@@ -94,7 +94,8 @@ export async function getDirectoryContents(
 				},
 				processEntities: false,
 			})
-			const result: WebDAVResponse = parseXml.parse(response.text)
+			const parsed = parseXml.parse(response.text) as unknown
+			const result = parsed as WebDAVResponse
 			const items = Array.isArray(result.multistatus.response)
 				? result.multistatus.response
 				: [result.multistatus.response]

@@ -229,7 +229,7 @@ async function removeRecursive(
 	await fs.rm(targetPath, options)
 }
 
-export async function listVaultPaths(app: App) {
+export function listVaultPaths(app: App) {
 	const paths = new Set<string>(['/'])
 	const queue = [...app.vault.getRoot().children]
 
@@ -840,20 +840,26 @@ export class ObsidianVaultFs implements IFileSystem {
 		await this.assertExists(path)
 	}
 
-	async symlink(_target: string, linkPath: string): Promise<void> {
-		throw new Error(
-			`ENOTSUP: symbolic links are not supported in vault fs, link '${linkPath}'`,
+	symlink(_target: string, linkPath: string): Promise<void> {
+		return Promise.reject(
+			new Error(
+				`ENOTSUP: symbolic links are not supported in vault fs, link '${linkPath}'`,
+			),
 		)
 	}
 
-	async link(_existingPath: string, newPath: string): Promise<void> {
-		throw new Error(
-			`ENOTSUP: hard links are not supported in vault fs, link '${newPath}'`,
+	link(_existingPath: string, newPath: string): Promise<void> {
+		return Promise.reject(
+			new Error(
+				`ENOTSUP: hard links are not supported in vault fs, link '${newPath}'`,
+			),
 		)
 	}
 
-	async readlink(path: string): Promise<string> {
-		throw new Error(`EINVAL: not a symbolic link, readlink '${path}'`)
+	readlink(path: string): Promise<string> {
+		return Promise.reject(
+			new Error(`EINVAL: not a symbolic link, readlink '${path}'`),
+		)
 	}
 
 	async lstat(path: string): Promise<FsStat> {

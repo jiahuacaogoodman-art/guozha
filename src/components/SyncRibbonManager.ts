@@ -4,6 +4,7 @@ import { emitCancelSync } from '../events'
 import i18n from '../i18n'
 import type NutstorePlugin from '../index'
 import { SyncStartMode } from '../sync'
+import { runAsync } from '../utils/async-helpers'
 import { openChatboxLeaf } from '../utils/open-chatbox-leaf'
 import SyncConfirmModal from './SyncConfirmModal'
 
@@ -15,7 +16,7 @@ export class SyncRibbonManager {
 		this.startRibbonEl = this.plugin.addRibbonIcon(
 			'refresh-ccw',
 			i18n.t('sync.startButton'),
-			async () => {
+			() => {
 				if (this.plugin.isSyncing) {
 					return
 				}
@@ -42,9 +43,9 @@ export class SyncRibbonManager {
 					})
 				}
 				if (plugin.settings.confirmBeforeSync) {
-					new SyncConfirmModal(this.plugin.app, startSync).open()
+					new SyncConfirmModal(this.plugin.app, () => runAsync(startSync)).open()
 				} else {
-					startSync()
+					runAsync(startSync)
 				}
 			},
 		)

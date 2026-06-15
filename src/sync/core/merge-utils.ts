@@ -94,9 +94,9 @@ function diff3MergeStrings(
 	return result.flat().join('\n')
 }
 
-export async function resolveByIntelligentMerge(
+export function resolveByIntelligentMerge(
 	params: IntelligentMergeParams,
-): Promise<IntelligentMergeResult> {
+): IntelligentMergeResult {
 	const { localContentText, remoteContentText, baseContentText } = params
 
 	if (localContentText === remoteContentText) {

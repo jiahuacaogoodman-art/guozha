@@ -2,6 +2,7 @@ import { Modal, Setting } from 'obsidian'
 import i18n from '~/i18n'
 import { StatModel } from '~/model/stat.model'
 import CacheService from '~/services/cache.service.v1'
+import { getErrorMessage, runAsync } from '~/utils/async-helpers'
 import logger from '~/utils/logger'
 import type NutstorePlugin from '..'
 
@@ -78,14 +79,16 @@ export default class CacheRestoreModal extends Modal {
 					text: i18n.t('settings.cache.restoreModal.restore'),
 					cls: 'mod-cta',
 				})
-				restoreBtn.addEventListener('click', async () => {
-					try {
-						await this.cacheService.restoreCache(basename)
-						this.onSuccess?.()
-						this.close()
-					} catch (error) {
-						// Error is already handled in the service
-					}
+				restoreBtn.addEventListener('click', () => {
+					runAsync(async () => {
+						try {
+							await this.cacheService.restoreCache(basename)
+							this.onSuccess?.()
+							this.close()
+						} catch (error) {
+							// Error is already handled in the service
+						}
+					})
 				})
 
 				let confirmedDelete = false
@@ -93,21 +96,23 @@ export default class CacheRestoreModal extends Modal {
 					text: i18n.t('settings.cache.restoreModal.delete'),
 					cls: 'transition',
 				})
-				deleteBtn.addEventListener('click', async () => {
-					if (confirmedDelete) {
-						try {
-							await this.cacheService.deleteCache(basename)
-							await this.loadFileList()
-						} catch (error) {
-							// Error is already handled in the service
+				deleteBtn.addEventListener('click', () => {
+					runAsync(async () => {
+						if (confirmedDelete) {
+							try {
+								await this.cacheService.deleteCache(basename)
+								await this.loadFileList()
+							} catch (error) {
+								// Error is already handled in the service
+							}
+						} else {
+							confirmedDelete = true
+							deleteBtn.setText(
+								i18n.t('settings.cache.restoreModal.deleteConfirm'),
+							)
+							deleteBtn.classList.add('mod-warning')
 						}
-					} else {
-						confirmedDelete = true
-						deleteBtn.setText(
-							i18n.t('settings.cache.restoreModal.deleteConfirm'),
-						)
-						deleteBtn.classList.add('mod-warning')
-					}
+					})
 				})
 				deleteBtn.addEventListener('blur', () => {
 					confirmedDelete = false
@@ -120,7 +125,7 @@ export default class CacheRestoreModal extends Modal {
 			this.fileList.empty()
 			this.fileList.createEl('p', {
 				text: i18n.t('settings.cache.restoreModal.loadError', {
-					message: error.message,
+					message: getErrorMessage(error),
 				}),
 				cls: 'p-12px text-center text-[var(--text-error)]',
 			})

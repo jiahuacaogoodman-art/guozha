@@ -131,11 +131,12 @@ export async function updateMtimeInRecord(
 				})
 				successfulTasksCount++
 			} catch (e) {
+				const error = e instanceof Error ? e : new Error(String(e))
 				logger.error(
 					'updateMtimeInRecord',
 					{
-						errorName: e.name,
-						errorMsg: e.message,
+						errorName: error.name,
+						errorMsg: error.message,
 					},
 					task.toJSON(),
 				)

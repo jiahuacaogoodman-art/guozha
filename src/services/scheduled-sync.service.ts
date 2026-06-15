@@ -1,5 +1,6 @@
 import { useSettings } from '~/settings'
 import { SyncStartMode } from '~/sync'
+import { runAsync } from '~/utils/async-helpers'
 import { clamp } from '~/utils/std'
 import type NutstorePlugin from '..'
 import type SyncExecutorService from './sync-executor.service'
@@ -17,14 +18,16 @@ export default class ScheduledSyncService {
 		const settings = await useSettings()
 
 		if (settings.startupSyncDelaySeconds > 0) {
-			this.startupSyncTimer = window.setTimeout(async () => {
-				try {
-					await this.syncExecutor.executeSync({
-						mode: SyncStartMode.AUTO_SYNC,
-					})
-				} finally {
-					this.startTimer(settings.autoSyncIntervalSeconds)
-				}
+			this.startupSyncTimer = window.setTimeout(() => {
+				runAsync(async () => {
+					try {
+						await this.syncExecutor.executeSync({
+							mode: SyncStartMode.AUTO_SYNC,
+						})
+					} finally {
+						this.startTimer(settings.autoSyncIntervalSeconds)
+					}
+				})
 			}, settings.startupSyncDelaySeconds * 1000)
 		} else {
 			this.startTimer(settings.autoSyncIntervalSeconds)
@@ -38,9 +41,11 @@ export default class ScheduledSyncService {
 		const clampedIntervalMs = clamp(intervalMs, 0, 2 ** 31 - 1)
 
 		if (clampedIntervalMs > 0) {
-			this.autoSyncTimer = window.setInterval(async () => {
-				await this.syncExecutor.executeSync({
-					mode: SyncStartMode.AUTO_SYNC,
+			this.autoSyncTimer = window.setInterval(() => {
+				runAsync(async () => {
+					await this.syncExecutor.executeSync({
+						mode: SyncStartMode.AUTO_SYNC,
+					})
 				})
 			}, clampedIntervalMs)
 		}

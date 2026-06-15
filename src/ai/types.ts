@@ -152,7 +152,7 @@ export interface AIToolDefinition {
 	description: string
 	inputSchema: z.ZodTypeAny
 	execute: (
-		params: any,
+		params: unknown,
 		context: AIToolExecutionContext,
 	) => Promise<ToolExecutionResult>
 }

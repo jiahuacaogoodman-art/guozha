@@ -31,7 +31,7 @@ async function executeWithRetry<T>(func: () => MaybePromise<T>): Promise<T> {
 		try {
 			return await func()
 		} catch (err) {
-			if (is503Error(err)) {
+			if (err instanceof Error && is503Error(err)) {
 				await sleep(30_000)
 			} else {
 				throw err

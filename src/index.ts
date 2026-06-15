@@ -80,7 +80,7 @@ export default class NutstorePlugin extends Plugin {
 		await this.scheduledSyncService.start()
 	}
 
-	async onunload() {
+	onunload() {
 		setPluginInstance(null)
 		emitCancelSync()
 		this.scheduledSyncService.unload()
@@ -148,7 +148,8 @@ export default class NutstorePlugin extends Plugin {
 			configDirSyncMode: 'none',
 		}
 
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+		const loadedSettings = (await this.loadData()) as Partial<NutstoreSettings>
+		this.settings = { ...DEFAULT_SETTINGS, ...loadedSettings }
 		this.settings.ai ??= { providers: {}, defaultModel: undefined, yolo: false }
 		if (Array.isArray(this.settings.ai.providers)) {
 			this.settings.ai.providers = {}

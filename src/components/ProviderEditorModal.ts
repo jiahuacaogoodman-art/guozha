@@ -78,7 +78,7 @@ export default class ProviderEditorModal extends Modal {
 					new ModelEditorModal(
 						this.plugin,
 						createModelConfig(),
-						async (model) => {
+						(model) => {
 							if (this.draft.models[model.id]) {
 								new Notice(i18n.t('settings.ai.errors.duplicateModelId'))
 								return false
@@ -112,12 +112,12 @@ export default class ProviderEditorModal extends Modal {
 						.setButtonText(i18n.t('settings.ai.modals.model.edit'))
 						.onClick(() => {
 							new ModelEditorModal(
-								this.plugin,
-								model,
-								async (savedModel) => {
-									const isRename = savedModel.id !== model.id
-									if (isRename && this.draft.models[savedModel.id]) {
-										new Notice(i18n.t('settings.ai.errors.duplicateModelId'))
+							this.plugin,
+							model,
+							(savedModel) => {
+								const isRename = savedModel.id !== model.id
+								if (isRename && this.draft.models[savedModel.id]) {
+									new Notice(i18n.t('settings.ai.errors.duplicateModelId'))
 										return false
 									}
 									const { [model.id]: _old, ...rest } = this.draft.models
