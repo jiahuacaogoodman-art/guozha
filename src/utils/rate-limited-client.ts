@@ -4,15 +4,24 @@ import { apiLimiter } from './api-limiter'
 export function createRateLimitedWebDAVClient(
 	client: WebDAVClient,
 ): WebDAVClient {
-	return new Proxy(client, {
+	const rateLimitedClient = new Proxy(client, {
 		get(target, prop, receiver) {
-			const value = Reflect.get(target, prop, receiver)
+			const value = Reflect.get(target, prop, receiver) as unknown
 			if (typeof value === 'function') {
-				return (...args: any[]) => {
-					return apiLimiter.schedule(() => value.apply(target, args))
+				return (...args: unknown[]) => {
+					return apiLimiter.schedule(() =>
+						Promise.resolve(
+							Reflect.apply(
+								value as (...args: unknown[]) => unknown,
+								target,
+								args,
+							),
+						),
+					)
 				}
 			}
 			return value
 		},
 	})
+	return rateLimitedClient
 }

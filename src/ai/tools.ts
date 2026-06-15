@@ -43,6 +43,39 @@ const booleanValue = (field: string) =>
 		z.boolean(i18n.t('chatbox.errors.toolFieldRequired', { field })),
 	)
 
+const readFileInputSchema = z.object({
+	path: z
+		.string()
+		.trim()
+		.min(1, i18n.t('chatbox.errors.toolFieldRequired', { field: 'path' })),
+})
+
+const editFileInputSchema = z.object({
+	path: z
+		.string()
+		.trim()
+		.min(1, i18n.t('chatbox.errors.toolFieldRequired', { field: 'path' })),
+	oldText: z
+		.string()
+		.min(1, i18n.t('chatbox.errors.toolFieldRequired', { field: 'oldText' })),
+	newText: textValue('newText'),
+})
+
+const bashInputSchema = z.object({
+	script: textValue('script'),
+	cwd: z.string().default(VAULT_MOUNT_POINT),
+	stdin: z.string().optional(),
+	rawScript: booleanValue('rawScript').default(false),
+})
+
+const spawnInputSchema = z.object({
+	task: z
+		.string()
+		.trim()
+		.min(1, i18n.t('chatbox.errors.toolFieldRequired', { field: 'task' })),
+	label: z.string().trim().optional(),
+})
+
 function isAllowedBashCwd(pathValue: string) {
 	const normalized = pathPosix.normalize(
 		pathPosix.resolve('/', pathValue || '/'),
@@ -141,17 +174,9 @@ export function createAITools(
 			name: 'read_file',
 			description:
 				'Read a vault text file and return its contents. The path can be a vault-relative path (e.g. notes/file.md) or an absolute virtual path (e.g. /vault/notes/file.md).',
-			inputSchema: z.object({
-				path: z
-					.string()
-					.trim()
-					.min(
-						1,
-						i18n.t('chatbox.errors.toolFieldRequired', { field: 'path' }),
-					),
-			}),
+			inputSchema: readFileInputSchema,
 			execute: async (params): Promise<ToolExecutionResult> => {
-				const path = params.path
+				const { path } = readFileInputSchema.parse(params)
 				const normalizedPath = normalizeVaultToolPath(path, 'read_file')
 
 				await permissionGuard?.({
@@ -174,26 +199,9 @@ export function createAITools(
 			name: 'edit_file',
 			description:
 				'Edit a vault text file by replacing one exact, uniquely matched text block with new text. The path can be a vault-relative path (e.g. notes/file.md) or an absolute virtual path (e.g. /vault/notes/file.md).',
-			inputSchema: z.object({
-				path: z
-					.string()
-					.trim()
-					.min(
-						1,
-						i18n.t('chatbox.errors.toolFieldRequired', { field: 'path' }),
-					),
-				oldText: z
-					.string()
-					.min(
-						1,
-						i18n.t('chatbox.errors.toolFieldRequired', { field: 'oldText' }),
-					),
-				newText: textValue('newText'),
-			}),
+			inputSchema: editFileInputSchema,
 			execute: async (params): Promise<ToolExecutionResult> => {
-				const path = params.path
-				const oldText = params.oldText
-				const newText = params.newText
+				const { path, oldText, newText } = editFileInputSchema.parse(params)
 				const normalizedPath = normalizeVaultToolPath(path, 'edit_file')
 
 				await permissionGuard?.({
@@ -240,24 +248,19 @@ export function createAITools(
 			name: 'bash',
 			description:
 				"Execute bash against a virtual filesystem where the Obsidian vault is mounted at /vault. Use standard shell commands like ls, cat, rg, mkdir, mv, cp, and rm. Treat /vault as the user's personal knowledge base — only write there for content the user intends to keep; use /tmp for intermediate or scratch work.",
-			inputSchema: z.object({
-				script: textValue('script'),
-				cwd: z.string().default(VAULT_MOUNT_POINT),
-				stdin: z.string().optional(),
-				rawScript: booleanValue('rawScript').default(false),
-			}),
+			inputSchema: bashInputSchema,
 			execute: async (params): Promise<ToolExecutionResult> => {
-				const cwd = params.cwd || VAULT_MOUNT_POINT
+				const { cwd, script, stdin, rawScript } = bashInputSchema.parse(params)
 				if (!isAllowedBashCwd(cwd)) {
 					throw new Error(
 						`Invalid bash cwd: ${cwd}. Allowed roots are / and ${VAULT_MOUNT_POINT}`,
 					)
 				}
 
-				const result = await execVaultBash(app, params.script, {
+				const result = await execVaultBash(app, script, {
 					cwd,
-					stdin: params.stdin,
-					rawScript: params.rawScript,
+					stdin,
+					rawScript,
 					permissionGuard,
 				})
 
@@ -282,21 +285,13 @@ export function createAITools(
 			name: 'spawn',
 			description:
 				'Run a large independent background task and return its task result when finished.',
-			inputSchema: z.object({
-				task: z
-					.string()
-					.trim()
-					.min(
-						1,
-						i18n.t('chatbox.errors.toolFieldRequired', { field: 'task' }),
-					),
-				label: z.string().trim().optional(),
-			}),
+			inputSchema: spawnInputSchema,
 			execute: async (params, context): Promise<ToolExecutionResult> => {
+				const { task, label } = spawnInputSchema.parse(params)
 				return {
 					result: await options.spawnTask!({
-						prompt: params.task,
-						title: params.label,
+						prompt: task,
+						title: label,
 						parentTaskId: context.parentTaskId,
 						depth: context.depth + 1,
 						maxDepth: context.maxDepth,

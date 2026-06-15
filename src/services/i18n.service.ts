@@ -5,17 +5,17 @@ import NutstorePlugin from '..'
 
 export default class I18nService {
 	constructor(private plugin: NutstorePlugin) {
-		this.update()
+		void this.update()
 	}
 
 	update = async () => {
 		try {
 			const settings = await useSettings()
 			if (settings.language) {
-				i18n.changeLanguage(settings.language.toLowerCase())
+				await i18n.changeLanguage(settings.language.toLowerCase())
 			} else {
 				const code = navigator.language.split('-')[0]
-				i18n.changeLanguage(code.toLowerCase())
+				await i18n.changeLanguage(code.toLowerCase())
 			}
 		} catch (e) {
 			logger.error(e)

@@ -1,6 +1,7 @@
 import { createClient, WebDAVClient } from 'webdav'
 import { NS_DAV_ENDPOINT } from '../consts'
 import NutstorePlugin from '../index'
+import { toError } from '../utils/async-helpers'
 import { createRateLimitedWebDAVClient } from '../utils/rate-limited-client'
 
 export class WebDAVService {
@@ -29,7 +30,7 @@ export class WebDAVService {
 			return { success: await client.exists('/') }
 		} catch (error) {
 			return {
-				error,
+				error: toError(error),
 				success: false,
 			}
 		}

@@ -108,7 +108,7 @@ async function getDatabase(
 	return promise
 }
 
-export class IndexedDBStorage<T = any> extends StorageInterface<T> {
+export class IndexedDBStorage<T = unknown> extends StorageInterface<T> {
 	constructor(private options: IndexedDBStorageOptions) {
 		super()
 	}
@@ -139,9 +139,9 @@ export class IndexedDBStorage<T = any> extends StorageInterface<T> {
 	async getItem(key: string): Promise<T | null> {
 		const transaction = await this.transaction('readonly')
 		const done = transactionDone(transaction)
-		const result = await requestToPromise<T | undefined>(
+		const result = (await requestToPromise<unknown>(
 			transaction.objectStore(this.options.storeName).get(key),
-		)
+		)) as T | undefined
 		await done
 		return result ?? null
 	}

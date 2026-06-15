@@ -80,7 +80,7 @@ export default class CacheClearModal extends Modal {
 				let confirmed = false
 				button
 					.setButtonText(i18n.t('settings.cache.clear'))
-					.onClick(async () => {
+					.onClick(() => {
 						if (confirmed) {
 							try {
 								if (this.onSuccess) {

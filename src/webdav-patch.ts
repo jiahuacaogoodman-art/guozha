@@ -27,7 +27,7 @@ function objKeyToLower(obj: Record<string, string>) {
  * @returns true if all are iso 8859 1 chars
  */
 function onlyAscii(str: string) {
-	return !/[^\u0000-\u00ff]/g.test(str)
+	return Array.from(str).every((char) => char.charCodeAt(0) <= 0xff)
 }
 
 if (VALID_REQURL) {
@@ -42,7 +42,7 @@ if (VALID_REQURL) {
 				transformedHeaders['accept'] ?? transformedHeaders['content-type']
 
 			const retractedHeaders = { ...transformedHeaders }
-			if (retractedHeaders.hasOwnProperty('authorization')) {
+			if (Object.prototype.hasOwnProperty.call(retractedHeaders, 'authorization')) {
 				retractedHeaders['authorization'] = '<retracted>'
 			}
 
@@ -69,7 +69,7 @@ if (VALID_REQURL) {
 			}
 			const rspHeaders = objKeyToLower({ ...r.headers })
 			for (const key in rspHeaders) {
-				if (rspHeaders.hasOwnProperty(key)) {
+				if (Object.prototype.hasOwnProperty.call(rspHeaders, key)) {
 					if (!onlyAscii(rspHeaders[key])) {
 						rspHeaders[key] = encodeURIComponent(rspHeaders[key])
 					}

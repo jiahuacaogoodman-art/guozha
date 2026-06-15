@@ -1,13 +1,13 @@
 const UNAVAILABLE_MESSAGE =
 	'This local build does not include Nutstore SSO. Use manual WebDAV login in plugin settings.'
 
-export async function createOAuthUrl(_options: { app: string }): Promise<string> {
-	throw new Error(UNAVAILABLE_MESSAGE)
+export function createOAuthUrl(_options: { app: string }): Promise<string> {
+	return Promise.reject(new Error(UNAVAILABLE_MESSAGE))
 }
 
-export async function decryptSecret(_options: {
+export function decryptSecret(_options: {
 	app: string
 	s: string
 }): Promise<string> {
-	throw new Error(UNAVAILABLE_MESSAGE)
+	return Promise.reject(new Error(UNAVAILABLE_MESSAGE))
 }

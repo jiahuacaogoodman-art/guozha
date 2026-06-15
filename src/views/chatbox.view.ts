@@ -86,9 +86,10 @@ export default class ChatboxView extends ItemView {
 		})
 	}
 
-	async onClose() {
+	onClose(): Promise<void> {
 		this.unsub?.()
 		this.controller?.destroy()
 		this.contentEl.empty()
+		return Promise.resolve()
 	}
 }

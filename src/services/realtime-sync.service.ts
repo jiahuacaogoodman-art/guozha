@@ -30,7 +30,7 @@ export default class RealtimeSyncService {
 				if (!settings.realtimeSync) {
 					return
 				}
-				await this.submitSyncRequest()
+				this.submitSyncRequest()
 			}),
 		)
 		this.plugin.registerEvent(
@@ -39,7 +39,7 @@ export default class RealtimeSyncService {
 				if (!settings.realtimeSync) {
 					return
 				}
-				await this.submitSyncRequest()
+				this.submitSyncRequest()
 			}),
 		)
 		this.plugin.registerEvent(
@@ -48,7 +48,7 @@ export default class RealtimeSyncService {
 				if (!settings.realtimeSync) {
 					return
 				}
-				await this.submitSyncRequest()
+				this.submitSyncRequest()
 			}),
 		)
 		this.plugin.registerEvent(
@@ -57,7 +57,7 @@ export default class RealtimeSyncService {
 				if (!settings.realtimeSync) {
 					return
 				}
-				await this.submitSyncRequest()
+				this.submitSyncRequest()
 			}),
 		)
 	}

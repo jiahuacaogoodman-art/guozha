@@ -6,6 +6,7 @@ import { getDirectoryContents } from '~/api/webdav'
 import { fileStatToStatModel } from '~/utils/file-stat-to-stat-model'
 import { mkdirsWebDAV } from '~/utils/mkdirs-webdav'
 import { stdRemotePath } from '~/utils/std-remote-path'
+import { runAsync } from '~/utils/async-helpers'
 
 export default class SelectRemoteBaseDirModal extends Modal {
 	constructor(
@@ -39,10 +40,12 @@ export default class SelectRemoteBaseDirModal extends Modal {
 				explorer.remove()
 				this.close()
 			},
-			onConfirm: async (path) => {
-				await Promise.resolve(this.onConfirm(stdRemotePath(path)))
-				explorer.remove()
-				this.close()
+			onConfirm: (path) => {
+				runAsync(async () => {
+					await Promise.resolve(this.onConfirm(stdRemotePath(path)))
+					explorer.remove()
+					this.close()
+				})
 			},
 		})
 	}

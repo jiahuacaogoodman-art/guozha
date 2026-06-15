@@ -6,6 +6,7 @@ import CacheSaveModal from '~/components/CacheSaveModal'
 import SelectRemoteBaseDirModal from '~/components/SelectRemoteBaseDirModal'
 import i18n from '~/i18n'
 import { TraverseWebDAVCache } from '~/storage'
+import { getErrorMessage, runAsync } from '~/utils/async-helpers'
 import { getDBKey } from '~/utils/get-db-key'
 import logger from '~/utils/logger'
 import { stdRemotePath } from '~/utils/std-remote-path'
@@ -17,7 +18,7 @@ export interface ExportedStorage {
 }
 
 export default class CacheSettings extends BaseSettings {
-	async display() {
+	display() {
 		this.containerEl.empty()
 		new Setting(this.containerEl)
 			.setName(i18n.t('settings.cache.title'))
@@ -31,14 +32,18 @@ export default class CacheSettings extends BaseSettings {
 				text
 					.setPlaceholder(i18n.t('settings.cache.remoteCacheDir.placeholder'))
 					.setValue(this.remoteCacheDir)
-					.onChange(async (value) => {
-						this.plugin.settings.remoteCacheDir = value
-						await this.plugin.saveSettings()
+					.onChange((value) => {
+						runAsync(async () => {
+							this.plugin.settings.remoteCacheDir = value
+							await this.plugin.saveSettings()
+						})
 					})
-				text.inputEl.addEventListener('blur', async () => {
-					this.plugin.settings.remoteCacheDir = this.remoteCacheDir
-					await this.plugin.saveSettings()
-					this.display()
+				text.inputEl.addEventListener('blur', () => {
+					runAsync(async () => {
+						this.plugin.settings.remoteCacheDir = this.remoteCacheDir
+						await this.plugin.saveSettings()
+						this.display()
+					})
 				})
 			})
 			.addButton((button) => {
@@ -48,11 +53,13 @@ export default class CacheSettings extends BaseSettings {
 						new Notice(i18n.t('sync.error.accountNotConfigured'))
 						return
 					}
-					new SelectRemoteBaseDirModal(this.app, this.plugin, async (path) => {
-						this.plugin.settings.remoteCacheDir = path
-						await this.plugin.saveSettings()
-						this.display()
-					}).open()
+						new SelectRemoteBaseDirModal(this.app, this.plugin, (path) => {
+							runAsync(async () => {
+								this.plugin.settings.remoteCacheDir = path
+								await this.plugin.saveSettings()
+								this.display()
+							})
+						}).open()
 				})
 			})
 
@@ -82,22 +89,24 @@ export default class CacheSettings extends BaseSettings {
 			.addButton((button) => {
 				button
 					.setButtonText(i18n.t('settings.cache.clear'))
-					.onClick(async () => {
-						new CacheClearModal(this.plugin, async (options) => {
-							try {
-								const cleared =
-									await CacheClearModal.clearSelectedCaches(options)
+					.onClick(() => {
+						new CacheClearModal(this.plugin, (options) => {
+							runAsync(async () => {
+								try {
+									const cleared =
+										await CacheClearModal.clearSelectedCaches(options)
 								if (cleared.length > 0) {
 									new Notice(i18n.t('settings.cache.cleared'))
 								} else {
 									new Notice(
 										i18n.t('settings.cache.clearModal.nothingSelected'),
 									)
+									}
+								} catch (error) {
+									logger.error('Error clearing cache:', error)
+									new Notice(`Error clearing cache: ${getErrorMessage(error)}`)
 								}
-							} catch (error) {
-								logger.error('Error clearing cache:', error)
-								new Notice(`Error clearing cache: ${error.message}`)
-							}
+							})
 						}).open()
 					})
 			})

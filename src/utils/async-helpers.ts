@@ -1,0 +1,13 @@
+import logger from './logger'
+
+export function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error)
+}
+
+export function toError(error: unknown): Error {
+	return error instanceof Error ? error : new Error(getErrorMessage(error))
+}
+
+export function runAsync(task: () => Promise<unknown>): void {
+	void task().catch((error) => logger.error(error))
+}

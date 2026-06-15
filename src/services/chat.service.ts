@@ -237,14 +237,14 @@ function decodeBase64ToArrayBuffer(contentBase64: string) {
 		return buffer.buffer.slice(
 			buffer.byteOffset,
 			buffer.byteOffset + buffer.byteLength,
-		) as ArrayBuffer
+		)
 	}
 	const binary = atob(contentBase64)
 	const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
 	return bytes.buffer.slice(
 		bytes.byteOffset,
 		bytes.byteOffset + bytes.byteLength,
-	) as ArrayBuffer
+	)
 }
 
 function normalizeImageContent(content: string, mediaType: string) {
@@ -562,8 +562,8 @@ export default class ChatService {
 			onDeleteMessage: (messageId: string) => {
 				this.deleteMessage(messageId)
 			},
-			onRegenerateMessage: async (messageId: string) => {
-				await this.regenerateMessage(messageId)
+			onRegenerateMessage: (messageId: string) => {
+				void this.regenerateMessage(messageId)
 			},
 			onRecallMessage: async (
 				messageId: string,
@@ -2194,10 +2194,7 @@ export default class ChatService {
 				return
 			}
 
-			mutateTaskRecord(
-				nextTask,
-				toRunningTask(nextTask as QueuedChatTask, Date.now()),
-			)
+			mutateTaskRecord(nextTask, toRunningTask(nextTask, Date.now()))
 			void this.persistSession(session)
 			this.notify()
 			void this.runTask(nextTask)
@@ -2225,16 +2222,17 @@ export default class ChatService {
 		return createAITools(this.plugin.app, {
 			allowSpawn,
 			permissionGuard,
-			spawnTask: async (params) => ({
-				task_id: null,
-				parent_task_id: parentTaskId || params.parentTaskId || null,
-				label: params.title || params.prompt.slice(0, 48),
-				task: params.prompt,
-				status: 'running',
-				depth: params.depth,
-				max_depth: params.maxDepth,
-				async: true,
-			}),
+			spawnTask: (params) =>
+				Promise.resolve({
+					task_id: null,
+					parent_task_id: parentTaskId || params.parentTaskId || null,
+					label: params.title || params.prompt.slice(0, 48),
+					task: params.prompt,
+					status: 'running',
+					depth: params.depth,
+					max_depth: params.maxDepth,
+					async: true,
+				}),
 		})
 	}
 

@@ -5,6 +5,7 @@ import {
 	isNutstoreSsoUnavailableError,
 	OAuthResponse,
 } from '~/utils/decrypt-ticket-response'
+import { runAsync } from '~/utils/async-helpers'
 import { is503Error } from '~/utils/is-503-error'
 import logger from '~/utils/logger'
 import { createOAuthUrl } from '~/utils/nutstore-sso'
@@ -27,21 +28,23 @@ export default class AccountSettings extends BaseSettings {
 					.addOption('manual', i18n.t('settings.loginMode.manual'))
 					.addOption('sso', i18n.t('settings.loginMode.sso'))
 					.setValue(this.plugin.settings.loginMode)
-					.onChange(async (value: 'manual' | 'sso') => {
-						this.plugin.settings.loginMode = value
-						await this.plugin.saveSettings()
-						this.display()
-					}),
+						.onChange((value: 'manual' | 'sso') => {
+							runAsync(async () => {
+								this.plugin.settings.loginMode = value
+								await this.plugin.saveSettings()
+								await this.display()
+							})
+						}),
 			)
 
 		if (this.settings.isSSO) {
 			await this.displaySSOLoginSettings()
 		} else {
-			await this.displayManualLoginSettings()
+			this.displayManualLoginSettings()
 		}
 	}
 
-	async hide() {
+	hide() {
 		this.clearOAuthUrlTimer()
 	}
 
@@ -68,10 +71,12 @@ export default class AccountSettings extends BaseSettings {
 				text
 					.setPlaceholder(i18n.t('settings.account.placeholder'))
 					.setValue(this.plugin.settings.account)
-					.onChange(async (value) => {
-						this.plugin.settings.account = value
-						await this.plugin.saveSettings()
-					}),
+						.onChange((value) => {
+							runAsync(async () => {
+								this.plugin.settings.account = value
+								await this.plugin.saveSettings()
+							})
+						}),
 			)
 
 		new Setting(this.containerEl)
@@ -81,10 +86,12 @@ export default class AccountSettings extends BaseSettings {
 				text
 					.setPlaceholder(i18n.t('settings.credential.placeholder'))
 					.setValue(this.plugin.settings.credential)
-					.onChange(async (value) => {
-						this.plugin.settings.credential = value
-						await this.plugin.saveSettings()
-					})
+						.onChange((value) => {
+							runAsync(async () => {
+								this.plugin.settings.credential = value
+								await this.plugin.saveSettings()
+							})
+						})
 				text.inputEl.type = 'password'
 			})
 
@@ -115,11 +122,13 @@ export default class AccountSettings extends BaseSettings {
 						.setWarning()
 						.setButtonText(i18n.t('settings.ssoStatus.logout'))
 						.onClick(() => {
-							new LogoutConfirmModal(this.app, async () => {
-								this.plugin.settings.oauthResponseText = ''
-								await this.plugin.saveSettings()
-								new Notice(i18n.t('settings.ssoStatus.logoutSuccess'))
-								this.display()
+							new LogoutConfirmModal(this.app, () => {
+								runAsync(async () => {
+									this.plugin.settings.oauthResponseText = ''
+									await this.plugin.saveSettings()
+									new Notice(i18n.t('settings.ssoStatus.logoutSuccess'))
+									await this.display()
+								})
 							}).open()
 						})
 				})
@@ -153,23 +162,25 @@ export default class AccountSettings extends BaseSettings {
 					if (oauthUrl.length > 0) {
 						anchor.href = oauthUrl
 					}
-					this.updateOAuthUrlTimer = window.setInterval(async () => {
-						const stillInDoc = ownerDocument.contains(anchor)
-						if (!stillInDoc) {
-							this.clearOAuthUrlTimer()
-							return
-						}
-						try {
-							anchor.href = await createOAuthUrl({
-								app: 'obsidian',
-							})
-						} catch (error) {
-							logger.error(error)
-							this.clearOAuthUrlTimer()
-							if (isNutstoreSsoUnavailableError(error)) {
-								this.display()
+					this.updateOAuthUrlTimer = window.setInterval(() => {
+						runAsync(async () => {
+							const stillInDoc = ownerDocument.contains(anchor)
+							if (!stillInDoc) {
+								this.clearOAuthUrlTimer()
+								return
 							}
-						}
+							try {
+								anchor.href = await createOAuthUrl({
+									app: 'obsidian',
+								})
+							} catch (error) {
+								logger.error(error)
+								this.clearOAuthUrlTimer()
+								if (isNutstoreSsoUnavailableError(error)) {
+									await this.display()
+								}
+							}
+						})
 					}, 60 * 1000)
 				})
 		}
@@ -183,11 +194,13 @@ export default class AccountSettings extends BaseSettings {
 				button
 					.setButtonText(i18n.t('settings.ssoStatus.switchToManual'))
 					.setCta()
-					.onClick(async () => {
-						this.plugin.settings.loginMode = 'manual'
-						await this.plugin.saveSettings()
-						new Notice(i18n.t('settings.ssoStatus.switchedToManual'))
-						this.display()
+					.onClick(() => {
+						runAsync(async () => {
+							this.plugin.settings.loginMode = 'manual'
+							await this.plugin.saveSettings()
+							new Notice(i18n.t('settings.ssoStatus.switchedToManual'))
+							await this.display()
+						})
 					})
 			})
 	}
@@ -199,40 +212,42 @@ export default class AccountSettings extends BaseSettings {
 			.addButton((button) => {
 				button
 					.setButtonText(i18n.t('settings.checkConnection.name'))
-					.onClick(async (e) => {
-						const buttonEl = e.target as HTMLElement
-						buttonEl.classList.add('connection-button', 'loading')
-						buttonEl.classList.remove('success', 'error')
-						buttonEl.textContent = i18n.t('settings.checkConnection.name')
-						try {
-							const { success, error } =
-								await this.plugin.webDAVService.checkWebDAVConnection()
-							buttonEl.classList.remove('loading')
-							if (success) {
-								buttonEl.classList.add('success')
-								buttonEl.textContent = i18n.t(
-									'settings.checkConnection.successButton',
-								)
-								new Notice(i18n.t('settings.checkConnection.success'))
-							} else if (error && is503Error(error)) {
-								buttonEl.classList.add('error')
-								buttonEl.textContent = i18n.t('sync.error.requestsTooFrequent')
-								new Notice(i18n.t('sync.error.requestsTooFrequent'))
-							} else {
+					.onClick((e) => {
+						runAsync(async () => {
+							const buttonEl = e.target as HTMLElement
+							buttonEl.classList.add('connection-button', 'loading')
+							buttonEl.classList.remove('success', 'error')
+							buttonEl.textContent = i18n.t('settings.checkConnection.name')
+							try {
+								const { success, error } =
+									await this.plugin.webDAVService.checkWebDAVConnection()
+								buttonEl.classList.remove('loading')
+								if (success) {
+									buttonEl.classList.add('success')
+									buttonEl.textContent = i18n.t(
+										'settings.checkConnection.successButton',
+									)
+									new Notice(i18n.t('settings.checkConnection.success'))
+								} else if (error && is503Error(error)) {
+									buttonEl.classList.add('error')
+									buttonEl.textContent = i18n.t('sync.error.requestsTooFrequent')
+									new Notice(i18n.t('sync.error.requestsTooFrequent'))
+								} else {
+									buttonEl.classList.add('error')
+									buttonEl.textContent = i18n.t(
+										'settings.checkConnection.failureButton',
+									)
+									new Notice(i18n.t('settings.checkConnection.failure'))
+								}
+							} catch {
+								buttonEl.classList.remove('loading')
 								buttonEl.classList.add('error')
 								buttonEl.textContent = i18n.t(
 									'settings.checkConnection.failureButton',
 								)
 								new Notice(i18n.t('settings.checkConnection.failure'))
 							}
-						} catch {
-							buttonEl.classList.remove('loading')
-							buttonEl.classList.add('error')
-							buttonEl.textContent = i18n.t(
-								'settings.checkConnection.failureButton',
-							)
-							new Notice(i18n.t('settings.checkConnection.failure'))
-						}
+						})
 					})
 			})
 	}

@@ -4,7 +4,7 @@ import logger from '~/utils/logger'
 import NutstorePlugin from '..'
 
 export default class LoggerService {
-	logs: any[] = []
+	logs: unknown[] = []
 
 	constructor(private plugin: NutstorePlugin) {
 		if (IN_DEV) {

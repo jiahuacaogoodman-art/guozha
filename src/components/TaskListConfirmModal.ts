@@ -12,7 +12,7 @@ export default class TaskListConfirmModal extends Modal {
 		private tasks: BaseTask[],
 	) {
 		super(app)
-		this.selectedTasks = new Array(tasks.length).fill(true)
+		this.selectedTasks = Array.from({ length: tasks.length }, () => true)
 	}
 
 	onOpen() {

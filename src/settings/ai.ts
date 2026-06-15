@@ -10,11 +10,12 @@ import {
 } from '~/ai/config'
 import ProvidersManagerModal from '~/components/ProvidersManagerModal'
 import i18n from '~/i18n'
+import { runAsync } from '~/utils/async-helpers'
 import logger from '~/utils/logger'
 import BaseSettings from './settings.base'
 
 export default class AISettings extends BaseSettings {
-	async display() {
+	display() {
 		this.containerEl.empty()
 
 		new Setting(this.containerEl)
@@ -31,12 +32,14 @@ export default class AISettings extends BaseSettings {
 			.addButton((button) =>
 				button
 					.setButtonText(i18n.t('settings.ai.providers.manage'))
-					.onClick(() => {
-						new ProvidersManagerModal(this.plugin, async () => {
-							await this.persist(false)
-							this.display()
-						}).open()
-					}),
+						.onClick(() => {
+							new ProvidersManagerModal(this.plugin, () => {
+								runAsync(async () => {
+									await this.persist(false)
+									this.display()
+								})
+							}).open()
+						}),
 			)
 
 		new Setting(this.containerEl)
@@ -54,26 +57,28 @@ export default class AISettings extends BaseSettings {
 				}
 				dropdown
 					.setValue(this.plugin.settings.ai.defaultModel?.providerId || '')
-					.onChange(async (value) => {
-						if (!value) {
-							this.plugin.settings.ai.defaultModel = undefined
-						} else {
-							const provider = getProviderById(
-								this.plugin.settings.ai.providers,
-								value,
-							)
-							const currentModelId =
-								this.plugin.settings.ai.defaultModel?.modelId
-							const model =
-								getModelById(provider, currentModelId) ||
-								getFirstModel(provider)
-							this.plugin.settings.ai.defaultModel = model
-								? { providerId: value, modelId: model.id }
-								: undefined
-						}
-						await this.persist()
-						this.display()
-					})
+						.onChange((value) => {
+							runAsync(async () => {
+								if (!value) {
+									this.plugin.settings.ai.defaultModel = undefined
+								} else {
+									const provider = getProviderById(
+										this.plugin.settings.ai.providers,
+										value,
+									)
+									const currentModelId =
+										this.plugin.settings.ai.defaultModel?.modelId
+									const model =
+										getModelById(provider, currentModelId) ||
+										getFirstModel(provider)
+									this.plugin.settings.ai.defaultModel = model
+										? { providerId: value, modelId: model.id }
+										: undefined
+								}
+								await this.persist()
+								this.display()
+							})
+						})
 			})
 
 		new Setting(this.containerEl)
@@ -94,18 +99,21 @@ export default class AISettings extends BaseSettings {
 				dropdown
 					.setValue(this.plugin.settings.ai.defaultModel?.modelId || '')
 					.setDisabled(!provider)
-					.onChange(async (value) => {
-						const providerId = this.plugin.settings.ai.defaultModel?.providerId
-						if (providerId && value) {
-							this.plugin.settings.ai.defaultModel = {
-								providerId,
-								modelId: value,
-							}
-						} else {
-							this.plugin.settings.ai.defaultModel = undefined
-						}
-						await this.persist()
-					})
+						.onChange((value) => {
+							runAsync(async () => {
+								const providerId =
+									this.plugin.settings.ai.defaultModel?.providerId
+								if (providerId && value) {
+									this.plugin.settings.ai.defaultModel = {
+										providerId,
+										modelId: value,
+									}
+								} else {
+									this.plugin.settings.ai.defaultModel = undefined
+								}
+								await this.persist()
+							})
+						})
 			})
 
 		new Setting(this.containerEl)
@@ -114,9 +122,11 @@ export default class AISettings extends BaseSettings {
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.ai.yolo ?? false)
-					.onChange(async (value) => {
-						this.plugin.settings.ai.yolo = value
-						await this.persist()
+					.onChange((value) => {
+						runAsync(async () => {
+							this.plugin.settings.ai.yolo = value
+							await this.persist()
+						})
 					}),
 			)
 	}

@@ -3,6 +3,7 @@ import { onSsoReceive } from '~/events/sso-receive'
 import i18n from '~/i18n'
 import type NutstorePlugin from '~/index'
 import { ConflictStrategy } from '~/sync/tasks/conflict-resolve.task'
+import { runAsync } from '~/utils/async-helpers'
 import { GlobMatchOptions } from '~/utils/glob-match'
 import waitUntil from '~/utils/wait-until'
 import AccountSettings from './account'
@@ -75,7 +76,7 @@ export class NutstoreSettingTab extends PluginSettingTab {
 	warningContainerEl: HTMLElement
 
 	subSso = onSsoReceive().subscribe(() => {
-		this.display()
+		runAsync(() => this.display())
 	})
 
 	constructor(app: App, plugin: NutstorePlugin) {
@@ -126,18 +127,18 @@ export class NutstoreSettingTab extends PluginSettingTab {
 			.setName(i18n.t('settings.backupWarning.name'))
 			.setDesc(i18n.t('settings.backupWarning.desc'))
 		await this.accountSettings.display()
-		await this.commonSettings.display()
-		await this.filterSettings.display()
-		await this.cacheSettings.display()
-		await this.aiSettings.display()
-		await this.logSettings.display()
+		this.commonSettings.display()
+		this.filterSettings.display()
+		this.cacheSettings.display()
+		this.aiSettings.display()
+		this.logSettings.display()
 	}
 
 	get isSSO() {
 		return this.plugin.settings.loginMode === 'sso'
 	}
 
-	async hide() {
-		await this.accountSettings.hide()
+	hide() {
+		this.accountSettings.hide()
 	}
 }

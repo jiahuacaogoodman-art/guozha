@@ -88,6 +88,18 @@ interface AssistantGenerationLike {
 	response?: { body?: unknown }
 }
 
+interface DirectTokenUsage {
+	prompt_tokens?: number
+	completion_tokens?: number
+	total_tokens?: number
+}
+
+interface DirectStreamPayload {
+	done: boolean
+	text: string
+	usage?: DirectTokenUsage
+}
+
 type RuntimeWindow = Window & {
 	require?: (moduleName: string) => unknown
 }
@@ -108,6 +120,43 @@ function rawString(value: unknown): string | undefined {
 
 function rawArray(value: unknown): unknown[] {
 	return Array.isArray(value) ? value : []
+}
+
+function parseJsonObject(text: string): RawObject {
+	try {
+		return rawObject(JSON.parse(text) as unknown)
+	} catch {
+		return {}
+	}
+}
+
+async function readResponseJson(response: Response): Promise<RawObject> {
+	try {
+		return rawObject((await response.json()) as unknown)
+	} catch {
+		return {}
+	}
+}
+
+function getDirectErrorMessage(body: RawObject): string | undefined {
+	const error = rawObject(body.error)
+	return rawString(error.message)
+}
+
+function getDirectUsage(body: RawObject): DirectTokenUsage | undefined {
+	const usage = rawObject(body.usage)
+	const promptTokens = usage.prompt_tokens
+	const completionTokens = usage.completion_tokens
+	const totalTokens = usage.total_tokens
+	return Object.keys(usage).length > 0
+		? {
+				prompt_tokens:
+					typeof promptTokens === 'number' ? promptTokens : undefined,
+				completion_tokens:
+					typeof completionTokens === 'number' ? completionTokens : undefined,
+				total_tokens: typeof totalTokens === 'number' ? totalTokens : undefined,
+			}
+		: undefined
 }
 
 export interface GenerateAssistantTurnResult {
@@ -204,7 +253,7 @@ function toModelMessages(messages: AIMessage[]): ModelMessage[] {
 						type: 'tool-call' as const,
 						toolCallId: toolCall.id,
 						toolName: toolCall.function.name,
-						input: JSON.parse(toolCall.function.arguments || '{}'),
+						input: parseJsonObject(toolCall.function.arguments || '{}'),
 					})),
 				]
 				return {
@@ -687,11 +736,12 @@ async function generateTextAssistantTurnDirect(
 			if (!response) {
 				throw new Error(`Direct text request failed: ${url}`)
 			}
-			const body = await response.json().catch(() => undefined)
+			const body = await readResponseJson(response)
 			if (!response.ok) {
+				const errorMessage = getDirectErrorMessage(body)
 				throw new Error(
-					typeof body?.error?.message === 'string'
-						? `${body.error.message} (${url})`
+					errorMessage
+						? `${errorMessage} (${url})`
 						: `Direct text request failed: ${response.status} ${response.statusText}`,
 				)
 			}
@@ -714,17 +764,18 @@ async function generateTextAssistantTurnDirect(
 					await request.onTextDelta(text, text)
 				}
 			}
+			const usage = getDirectUsage(body)
 			return {
 				message,
 				meta: {
 					providerId: request.provider.id,
 					providerName: request.provider.name || 'OpenAI',
 					modelName,
-					usage: body?.usage
+					usage: usage
 						? {
-								inputTokens: body?.usage?.prompt_tokens,
-								outputTokens: body?.usage?.completion_tokens,
-								totalTokens: body?.usage?.total_tokens,
+								inputTokens: usage.prompt_tokens,
+								outputTokens: usage.completion_tokens,
+								totalTokens: usage.total_tokens,
 							}
 						: undefined,
 				},
@@ -767,7 +818,7 @@ function toUint8Array(chunk: unknown) {
 		return new Uint8Array(chunk)
 	}
 	if (ArrayBuffer.isView(chunk)) {
-		const view = chunk as ArrayBufferView
+		const view = chunk
 		return new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
 	}
 	return new TextEncoder().encode(String(chunk ?? ''))
@@ -862,14 +913,15 @@ function createNodeStreamingResponse(
 async function createDirectStreamingResponse(
 	url: string,
 	init: DirectStreamRequestInit,
-) {
+): Promise<Response> {
 	const target = new URL(url)
 	const nodeTransport = getNodeRequestModule(target)
 	if (nodeTransport) {
 		return createNodeStreamingResponse(url, init, nodeTransport)
 	}
 
-	const nativeFetch = window.fetch?.bind(window)
+	const nativeFetch: typeof fetch | undefined =
+		typeof globalThis.fetch === 'function' ? globalThis.fetch : undefined
 	if (!nativeFetch) {
 		throw new Error('Native streaming transport is unavailable.')
 	}
@@ -902,26 +954,30 @@ async function* readTextChunks(body: ReadableStream<Uint8Array>) {
 	}
 }
 
-function extractTextFromDirectStreamPayload(payload: string) {
+function extractTextFromDirectStreamPayload(
+	payload: string,
+): DirectStreamPayload {
 	if (!payload || payload === '[DONE]') {
 		return { done: payload === '[DONE]', text: '' }
 	}
 	try {
-		const body = JSON.parse(payload)
-		const usage = body?.usage
+		const body = parseJsonObject(payload)
+		const usage = getDirectUsage(body)
 		let text = ''
-		if (typeof body?.delta === 'string') {
+		if (typeof body.delta === 'string') {
 			text += body.delta
 		}
-		if (typeof body?.output_text === 'string') {
+		if (typeof body.output_text === 'string') {
 			text += body.output_text
 		}
-		if (Array.isArray(body?.choices)) {
-			for (const choice of body.choices) {
-				const delta = choice?.delta ?? choice?.message ?? choice
-				if (typeof delta?.content === 'string') {
+		const choices = rawArray(body.choices)
+		if (choices.length) {
+			for (const choiceValue of choices) {
+				const choice = rawObject(choiceValue)
+				const delta = rawObject(choice.delta ?? choice.message ?? choice)
+				if (typeof delta.content === 'string') {
 					text += delta.content
-				} else if (delta?.content !== undefined) {
+				} else if (delta.content !== undefined) {
 					text += contentPartsFromRawContent(delta.content)
 						.filter(
 							(part): part is Extract<AIMessageContentPart, { type: 'text' }> =>
@@ -930,7 +986,7 @@ function extractTextFromDirectStreamPayload(payload: string) {
 						.map((part) => part.text)
 						.join('')
 				}
-				if (typeof choice?.text === 'string') {
+				if (typeof choice.text === 'string') {
 					text += choice.text
 				}
 			}
@@ -966,10 +1022,11 @@ async function streamTextAssistantTurnDirect(
 				),
 			})
 			if (!response.ok) {
-				const body = await response.json().catch(() => undefined)
+				const body = await readResponseJson(response)
+				const errorMessage = getDirectErrorMessage(body)
 				throw new Error(
-					typeof body?.error?.message === 'string'
-						? `${body.error.message} (${url})`
+					errorMessage
+						? `${errorMessage} (${url})`
 						: `Direct streaming request failed: ${response.status} ${response.statusText}`,
 				)
 			}

@@ -183,8 +183,8 @@ export class NutstoreSync {
 				settings.confirmBeforeDeleteInAutoSync
 			) {
 				const removeLocalTasks = confirmedTasks.filter(
-					(t) => t instanceof RemoveLocalTask,
-				) as RemoveLocalTask[]
+					(t): t is RemoveLocalTask => t instanceof RemoveLocalTask,
+				)
 				if (removeLocalTasks.length > 0) {
 					new Notice(i18n.t('deleteConfirm.warningNotice'), 3000)
 					const { tasksToDelete, tasksToReupload } =

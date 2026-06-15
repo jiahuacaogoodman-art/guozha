@@ -3,6 +3,7 @@ import SyncConfirmModal from '~/components/SyncConfirmModal'
 import { emitCancelSync } from '~/events'
 import i18n from '~/i18n'
 import { SyncStartMode } from '~/sync'
+import { runAsync } from '~/utils/async-helpers'
 import logger from '~/utils/logger'
 import { openChatboxLeaf } from '~/utils/open-chatbox-leaf'
 import NutstorePlugin from '..'
@@ -43,9 +44,9 @@ export default class CommandService {
 					})
 				}
 				if (plugin.settings.confirmBeforeSync) {
-					new SyncConfirmModal(plugin.app, startSync).open()
+					new SyncConfirmModal(plugin.app, () => runAsync(startSync)).open()
 				} else {
-					startSync()
+					runAsync(startSync)
 				}
 			},
 		})

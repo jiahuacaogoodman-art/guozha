@@ -127,13 +127,14 @@ export default class ConflictResolveTask extends BaseTask {
 			})
 
 			switch (result.status) {
-				case LatestTimestampResolution.UseRemote:
+				case LatestTimestampResolution.UseRemote: {
 					const arrayBuffer =
 						result.content instanceof ArrayBuffer
 							? result.content
 							: new Uint8Array(result.content).buffer
 					await writeLocalBinary(this.vault, this.localPath, arrayBuffer)
 					break
+				}
 				case LatestTimestampResolution.UseLocal:
 					await this.webdav.putFileContents(this.remotePath, result.content, {
 						overwrite: true,
@@ -184,7 +185,7 @@ export default class ConflictResolveTask extends BaseTask {
 			const remoteText = await new Blob([new Uint8Array(remoteBuffer)]).text()
 			const baseText = (await baseBlob?.text()) ?? localText
 
-			const mergeResult = await resolveByIntelligentMerge({
+			const mergeResult = resolveByIntelligentMerge({
 				localContentText: localText,
 				remoteContentText: remoteText,
 				baseContentText: baseText,
@@ -262,7 +263,7 @@ export default class ConflictResolveTask extends BaseTask {
 			const remoteText = await new Blob([new Uint8Array(remoteBuffer)]).text()
 			const baseText = (await baseBlob?.text()) ?? localText
 
-			const mergeResult = await resolveByIntelligentMerge({
+			const mergeResult = resolveByIntelligentMerge({
 				localContentText: localText,
 				remoteContentText: remoteText,
 				baseContentText: baseText,
