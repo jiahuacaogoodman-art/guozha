@@ -69,6 +69,11 @@ jobs:
           RETRY_DELAY=5
           SUCCESS=false
 
+          if [ -z "${GEMINI_API_KEY}" ]; then
+            echo "GEMINI_API_KEY is not configured; skipping AI changelog generation."
+            exit 0
+          fi
+
           SYSTEM_PROMPT=$(cat <<'EOF'
           You generate release changelog entries from git commits.
           Output only Markdown bullet points.
