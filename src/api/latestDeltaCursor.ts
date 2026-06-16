@@ -8,8 +8,17 @@ interface GetLatestDeltaCursorInput {
 	token: string
 }
 
+interface LatestDeltaCursorResult {
+	response: {
+		cursor: string
+	}
+}
+
 export const getLatestDeltaCursor = apiLimiter.wrap(
-	async ({ folderName, token }: GetLatestDeltaCursorInput) => {
+	async ({
+		folderName,
+		token,
+	}: GetLatestDeltaCursorInput): Promise<LatestDeltaCursorResult> => {
 		const body = `<?xml version="1.0" encoding="utf-8"?>
               <s:delta xmlns:s="http://ns.jianguoyun.com">
                   <s:folderName>${folderName}</s:folderName>
@@ -37,10 +46,17 @@ export const getLatestDeltaCursor = apiLimiter.wrap(
 		})
 		const parsed = parseXml.parse(response.text) as unknown
 		const result = parsed as {
-			response: {
-				cursor: string
+			response?: {
+				cursor?: string
 			}
 		}
-		return result
+		if (!result.response?.cursor) {
+			throw new Error('Invalid Nutstore latest delta cursor response')
+		}
+		return {
+			response: {
+				cursor: result.response.cursor,
+			},
+		}
 	},
 )

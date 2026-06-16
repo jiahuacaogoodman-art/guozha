@@ -7,7 +7,7 @@ import process from 'process'
 
 const pkgJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
 const defaultDavEndpoint = 'https://dav.jianguoyun.com/dav'
-const defaultNsDavEndpoint = 'https://www.jianguoyun.com/dav'
+const defaultNsDavEndpoint = 'https://dav.jianguoyun.com/nsdav'
 
 const prod = process.argv[2] === 'production'
 

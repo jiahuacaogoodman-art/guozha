@@ -30,7 +30,11 @@ interface GetDeltaInput {
 }
 
 export const getDelta = apiLimiter.wrap(
-	async ({ folderName, cursor, token }: GetDeltaInput) => {
+	async ({
+		folderName,
+		cursor,
+		token,
+	}: GetDeltaInput): Promise<{ response: DeltaResponse }> => {
 		const body = `<?xml version="1.0" encoding="utf-8"?>
               <s:delta xmlns:s="http://ns.jianguoyun.com">
                   <s:folderName>${folderName}</s:folderName>
@@ -57,14 +61,19 @@ export const getDelta = apiLimiter.wrap(
 			processEntities: false,
 		})
 		const parsed = parseXml.parse(response.text) as unknown
-		const result = parsed as { response: DeltaResponse }
+		const result = parsed as { response?: DeltaResponse }
 
-		if (!isNil(result?.response?.cursor)) {
+		if (!result.response) {
+			throw new Error('Invalid Nutstore delta response')
+		}
+		if (!isNil(result.response.cursor)) {
 			result.response.cursor = result.response.cursor.toString()
 		}
 		if (result.response.delta) {
 			const entry = result.response.delta.entry
-			if (!Array.isArray(entry)) {
+			if (isNil(entry)) {
+				result.response.delta.entry = []
+			} else if (!Array.isArray(entry)) {
 				result.response.delta.entry = [entry]
 			}
 		} else {
@@ -75,6 +84,6 @@ export const getDelta = apiLimiter.wrap(
 		for (const entry of result.response.delta.entry) {
 			entry.path = decodeHtmlEntities(entry.path)
 		}
-		return result
+		return { response: result.response }
 	},
 )
