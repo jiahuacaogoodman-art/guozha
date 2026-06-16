@@ -6,6 +6,7 @@ import postcssMergeRules from 'postcss-merge-rules'
 import process from 'process'
 
 const pkgJson = JSON.parse(readFileSync('./package.json', 'utf-8'))
+const defaultDavEndpoint = 'https://dav.jianguoyun.com/dav'
 
 const prod = process.argv[2] === 'production'
 
@@ -59,10 +60,10 @@ const context = await esbuild.context({
 	],
 	define: {
 		'process.env.NS_NSDAV_ENDPOINT': JSON.stringify(
-			process.env.NS_NSDAV_ENDPOINT || '',
+			process.env.NS_NSDAV_ENDPOINT || defaultDavEndpoint,
 		),
 		'process.env.NS_DAV_ENDPOINT': JSON.stringify(
-			process.env.NS_DAV_ENDPOINT || '',
+			process.env.NS_DAV_ENDPOINT || defaultDavEndpoint,
 		),
 		'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || ''),
 		'process.env.PLUGIN_VERSION': JSON.stringify(pkgJson.version),
