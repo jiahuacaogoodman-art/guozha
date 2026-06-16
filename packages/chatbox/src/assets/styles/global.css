@@ -130,7 +130,7 @@
 .chatbox-send-button {
 	position: absolute;
 	right: 0.5rem;
-	top: 50%;
+	bottom: 0.25rem;
 	display: inline-flex;
 	width: 2rem;
 	height: 2rem;
@@ -141,7 +141,6 @@
 	font-size: 1rem;
 	line-height: 1;
 	padding: 0;
-	transform: translateY(-50%);
 }
 
 .chatbox-send-button:disabled {
@@ -202,7 +201,7 @@ body.chatbox-resize-active * {
 		height: auto;
 		min-height: 2.25rem;
 		max-height: 7.5rem;
-		padding: 0.4375rem 2.625rem 0.4375rem 0.625rem;
+		padding: 0.375rem 2.375rem 0.375rem 0.625rem;
 		line-height: 1.4;
 	}
 
@@ -218,7 +217,8 @@ body.chatbox-resize-active * {
 	}
 
 	.chatbox-send-button {
-		right: 0.375rem;
+		right: 0.25rem;
+		bottom: 0.25rem;
 		height: 1.75rem;
 		min-height: 1.75rem;
 		min-width: 1.75rem;
