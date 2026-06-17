@@ -2,8 +2,15 @@ name: Release Obsidian plugin
 
 on:
   push:
+    branches:
+      - main
     tags:
       - '*'
+    paths:
+      - manifest.json
+      - package.json
+      - versions.json
+      - .github/workflows/release.yml
 
 jobs:
   build:
@@ -15,6 +22,34 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+          else
+            tag="$(node -p "require('./manifest.json').version")"
+
+            if [ -z "$tag" ] || [ "$tag" = "undefined" ]; then
+              echo "Unable to read plugin version from manifest.json"
+              exit 1
+            fi
+
+            if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null 2>&1; then
+              echo "Tag ${tag} already exists; refreshing release assets from this checkout."
+            else
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git tag "$tag" "$GITHUB_SHA"
+              git push origin "refs/tags/${tag}"
+            fi
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -47,9 +82,10 @@ jobs:
       - name: Publish release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF#refs/tags/}"
+          tag="$RELEASE_TAG"
           assets=(main.js manifest.json styles.css mcp-stdio-bridge.cjs)
 
           release_notes=$(
